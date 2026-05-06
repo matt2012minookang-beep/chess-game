@@ -567,6 +567,31 @@
     outline-offset:-5px;
   }
 
+  .sq.ai-last{
+    box-shadow:
+      inset 0 0 0 5px rgba(255, 255, 255, .85),
+      inset 0 0 28px 12px rgba(250, 204, 21, .82),
+      0 0 22px rgba(250, 204, 21, .45);
+    animation: aiLastGlow 1.15s ease-in-out infinite alternate;
+  }
+
+  @keyframes aiLastGlow{
+    from{
+      filter:brightness(1.05);
+      box-shadow:
+        inset 0 0 0 4px rgba(255,255,255,.72),
+        inset 0 0 22px 8px rgba(250,204,21,.65),
+        0 0 12px rgba(250,204,21,.25);
+    }
+    to{
+      filter:brightness(1.26);
+      box-shadow:
+        inset 0 0 0 6px rgba(255,255,255,.95),
+        inset 0 0 34px 15px rgba(250,204,21,.92),
+        0 0 25px rgba(250,204,21,.55);
+    }
+  }
+
   .sq.move::after{
     content:"";
     width:26%;
@@ -885,7 +910,7 @@
     <h2>체스 대전장</h2>
     <p>
       아래 오른쪽의 <b>매치 시작</b>을 누르면 룰, 제한시간, 색상, AI 난이도를 정할 수 있습니다.
-      AI는 기물 가치, 위치 점수, 기동성, 체크 상태, 미니맥스 탐색을 사용합니다.
+      AI가 둔 직전 한 수는 체스판에서 밝게 빛나도록 표시됩니다.
     </p>
 
     <div class="rank-card">
@@ -983,7 +1008,7 @@
         </div>
 
         <div class="toggle-row">
-          <span class="rule-label" data-tip="폰이 끝 줄까지 도착하면 퀸, 룩, 비숍, 나이트 중 하나로 바꿀 수 있는 규칙입니다. 이 게임에서는 기본적으로 퀸을 추천합니다.">프로모션</span>
+          <span class="rule-label" data-tip="폰이 끝 줄까지 도착하면 퀸, 룩, 비숍, 나이트 중 하나로 바꿀 수 있는 규칙입니다.">프로모션</span>
           <button class="toggle on" data-rule="promotion">가능</button>
         </div>
 
@@ -1088,7 +1113,7 @@
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const LS_KEY = "chess_master_users_v3";
+  const LS_KEY = "chess_master_users_v4";
 
   const PIECE_ICON = {
     w:{ p:"♙", r:"♖", n:"♘", b:"♗", q:"♕", k:"♔" },
@@ -1509,7 +1534,8 @@
       lastTick:performance.now(),
       enPassant:null,
       moveHistory:[],
-      fullmove:1
+      fullmove:1,
+      lastAiMove:null
     };
 
     gameEnded = false;
@@ -1528,7 +1554,7 @@
     startTimer();
 
     if(match.turn === match.aiColor){
-      setTimeout(aiMove, 450);
+      setTimeout(aiMove, 650);
     }
   }
 
@@ -1901,6 +1927,12 @@
 
       if(selected && selected.r === r && selected.c === c) sq.classList.add("selected");
 
+      if(match.lastAiMove){
+        const isFrom = match.lastAiMove.fr === r && match.lastAiMove.fc === c;
+        const isTo = match.lastAiMove.tr === r && match.lastAiMove.tc === c;
+        if(isFrom || isTo) sq.classList.add("ai-last");
+      }
+
       const marker = legalForSelected.find(m => m.tr === r && m.tc === c);
       if(marker){
         if(match.board[r][c] || marker.enPassant) sq.classList.add("capture");
@@ -2069,6 +2101,12 @@
 
     makeMoveOn(match.board,mv,match);
 
+    if(pieceBefore && pieceBefore.color === match.aiColor){
+      match.lastAiMove = { fr:mv.fr, fc:mv.fc, tr:mv.tr, tc:mv.tc };
+    }else{
+      match.lastAiMove = null;
+    }
+
     match.moveHistory.push(moveNotation(mv,pieceBefore,capturedBefore));
 
     selected = null;
@@ -2083,7 +2121,7 @@
     const ended = checkGameEnd();
     if(!ended && match.turn === match.aiColor){
       $("aiState").innerHTML = `<span class="thinking">AI가 계산중입니다...</span>`;
-      setTimeout(aiMove, 160);
+      setTimeout(aiMove, 650);
     }
   }
 
@@ -2135,7 +2173,7 @@
 
     if(!best) best = moves[Math.floor(Math.random() * moves.length)];
 
-    $("aiState").innerHTML = `<span class="good">AI가 수를 두었습니다.</span>`;
+    $("aiState").innerHTML = `<span class="good">AI가 수를 두었습니다. 밝게 빛나는 칸이 방금 AI가 움직인 칸입니다.</span>`;
     doMove(best);
   }
 
