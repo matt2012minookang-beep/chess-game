@@ -9,14 +9,10 @@
 
   :root{
     --bg:#171927;
-    --panel:#111827;
     --line:#354058;
     --muted:#9ca3af;
     --blue:#4bb3ff;
     --blue2:#6366f1;
-    --green:#22c55e;
-    --red:#ef4444;
-    --gold:#fbbf24;
     --lightSquare:#eeeed2;
     --darkSquare:#769656;
     --select:#facc15;
@@ -35,6 +31,7 @@
   }
 
   button,input{ font-family:inherit; }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
   .hidden{ display:none !important; }
   .screen{ width:100%; min-height:100vh; }
 
@@ -269,6 +266,22 @@
     cursor:pointer;
   }
 
+  .history-fixed-btn{
+    position:fixed;
+    left:28px;
+    bottom:26px;
+    z-index:55;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:24px;
+    padding:22px 34px;
+    color:white;
+    font-size:24px;
+    font-weight:950;
+    background:linear-gradient(135deg,#f59e0b,#7c3aed);
+    box-shadow:0 20px 38px rgba(124,58,237,.25);
+    cursor:pointer;
+  }
+
   .modal-back{
     position:fixed;
     inset:0;
@@ -413,6 +426,7 @@
     justify-content:flex-end;
     gap:12px;
     margin-top:22px;
+    flex-wrap:wrap;
   }
 
   .sub-btn{
@@ -567,12 +581,20 @@
     outline-offset:-5px;
   }
 
-  .sq.ai-last{
+  .sq.ai-last,
+  .sq.replay-current{
     box-shadow:
-      inset 0 0 0 5px rgba(255, 255, 255, .85),
-      inset 0 0 28px 12px rgba(250, 204, 21, .82),
-      0 0 22px rgba(250, 204, 21, .45);
+      inset 0 0 0 5px rgba(255,255,255,.85),
+      inset 0 0 28px 12px rgba(250,204,21,.82),
+      0 0 22px rgba(250,204,21,.45);
     animation: aiLastGlow 1.15s ease-in-out infinite alternate;
+  }
+
+  .sq.mate-hint{
+    box-shadow:
+      inset 0 0 0 6px rgba(255,50,50,.95),
+      inset 0 0 28px 12px rgba(239,68,68,.70),
+      0 0 24px rgba(239,68,68,.55);
   }
 
   @keyframes aiLastGlow{
@@ -625,6 +647,16 @@
     line-height:1;
     cursor:grab;
     touch-action:none;
+  }
+
+  .piece.ghost{
+    opacity:.38;
+    color:#ffdddd !important;
+    text-shadow:
+      0 0 10px rgba(255,0,0,.95),
+      0 0 18px rgba(255,0,0,.75) !important;
+    z-index:5;
+    pointer-events:none;
   }
 
   .piece:active{ cursor:grabbing; }
@@ -700,7 +732,6 @@
   }
 
   .thinking{ color:#93c5fd; font-weight:950; }
-  .danger{ color:#fca5a5; font-weight:950; }
   .good{ color:#86efac; font-weight:950; }
 
   .result-list{ display:grid; gap:10px; }
@@ -851,8 +882,141 @@
     color:#e5e7eb;
   }
 
+  .record-list{ display:grid; gap:12px; }
+
+  .record-card{
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(255,255,255,.055);
+    border-radius:20px;
+    padding:16px;
+    cursor:pointer;
+  }
+
+  .record-card:hover{ background:rgba(255,255,255,.09); }
+
+  .record-card-top{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    margin-bottom:8px;
+    font-size:19px;
+    font-weight:950;
+  }
+
+  .record-meta{
+    color:#d1d5db;
+    font-size:15px;
+    font-weight:800;
+    line-height:1.55;
+  }
+
+  .tag-line{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .tag-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    padding:6px 10px;
+    background:rgba(250,204,21,.12);
+    border:1px solid rgba(250,204,21,.28);
+    color:#fde68a;
+    font-size:14px;
+    font-weight:950;
+  }
+
+  .mate-answer{
+    margin-top:8px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(239,68,68,.35);
+    background:rgba(239,68,68,.10);
+    color:#fecaca;
+    font-weight:900;
+  }
+
+  .replay-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 300px;
+    gap:18px;
+    align-items:start;
+  }
+
+  .replay-board-wrap{
+    width:100%;
+    max-width:620px;
+    aspect-ratio:1/1;
+    border-radius:14px;
+    overflow:hidden;
+    border:3px solid rgba(255,255,255,.18);
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+    margin:0 auto;
+  }
+
+  .replay-board{
+    width:100%;
+    height:100%;
+    display:grid;
+    grid-template-columns:repeat(8, minmax(0,1fr));
+    grid-template-rows:repeat(8, minmax(0,1fr));
+  }
+
+  .replay-info{
+    border-radius:22px;
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.12);
+    padding:16px;
+  }
+
+  .replay-info h3{
+    margin:0 0 12px;
+    font-size:23px;
+  }
+
+  .replay-move-text{
+    min-height:92px;
+    border-radius:16px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
+    padding:12px;
+    color:#e5e7eb;
+    font-weight:850;
+    line-height:1.55;
+    margin-bottom:12px;
+  }
+
+  .replay-move-text b{
+    color:white;
+    font-size:18px;
+  }
+
+  .replay-step{
+    color:#cbd5e1;
+    font-size:16px;
+    font-weight:850;
+    margin-bottom:12px;
+  }
+
+  .promotion-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-top:18px;
+  }
+
+  .promo-choice{
+    min-height:82px;
+    font-size:24px;
+  }
+
   @media (max-width:900px){
-    .setting-grid,.game-layout{ grid-template-columns:1fr; }
+    .setting-grid,.game-layout,.replay-layout{ grid-template-columns:1fr; }
     .piece-guide{ grid-template-columns:repeat(2,1fr); }
     .board-wrap{ width:100%; }
     .input-row{ flex-direction:column; align-items:stretch; }
@@ -862,6 +1026,12 @@
     .rank-title{ font-size:27px; }
     .start-match{
       right:18px;
+      bottom:18px;
+      font-size:20px;
+      padding:18px 24px;
+    }
+    .history-fixed-btn{
+      left:18px;
       bottom:18px;
       font-size:20px;
       padding:18px 24px;
@@ -909,8 +1079,8 @@
   <main class="hero">
     <h2>체스 대전장</h2>
     <p>
-      아래 오른쪽의 <b>매치 시작</b>을 누르면 룰, 제한시간, 색상, AI 난이도를 정할 수 있습니다.
-      AI가 둔 직전 한 수는 체스판에서 밝게 빛나도록 표시됩니다.
+      실수 판정 기준을 낮춰서 이제 더 많은 악수를 잡습니다. 실수한 수는 기록 리플레이에서 빨간 칸과 연한 기물로 더 좋은 수를 보여줍니다.
+      양쪽 모두 킹만 남으면 바로 스테일메이트 처리됩니다.
     </p>
 
     <div class="rank-card">
@@ -933,6 +1103,7 @@
     </div>
   </main>
 
+  <button id="historyBtn" class="history-fixed-btn">기록</button>
   <button id="startMatchBtn" class="start-match">매치 시작</button>
 </section>
 
@@ -978,14 +1149,15 @@
       <div id="gameInfo" class="info-box"></div>
       <div id="aiState" class="info-box">대기중</div>
 
-      <h3>기물 안내</h3>
+      <h3>분석 기호</h3>
       <div class="info-box">
-        ♙ / ♟ 폰 1점<br>
-        ♖ / ♜ 룩 5점<br>
-        ♘ / ♞ 나이트 3점<br>
-        ♗ / ♝ 비숍 3점<br>
-        ♕ / ♛ 퀸 9점<br>
-        ♔ / ♚ 킹 10점
+        !! 좋은 희생 / 탁월한 수<br>
+        ? 실수<br>
+        ♞ 희생<br>
+        + 체크<br>
+        # 체크메이트<br>
+        M! 체크메이트 가능했음<br>
+        ※ 분석은 내 수만 표시
       </div>
 
       <h3>수 기록</h3>
@@ -1018,12 +1190,12 @@
         </div>
 
         <div class="toggle-row">
-          <span class="rule-label" data-tip="킹이 공격받는 상태를 체크라고 하고, 체크에서 벗어날 합법수가 없으면 체크메이트입니다. 체스의 핵심 승리 조건입니다.">체크/체크메이트</span>
+          <span class="rule-label" data-tip="킹이 공격받는 상태를 체크라고 하고, 체크에서 벗어날 합법수가 없으면 체크메이트입니다.">체크/체크메이트</span>
           <button class="toggle on" data-rule="checkRule">가능</button>
         </div>
 
         <div class="toggle-row">
-          <span class="rule-label" data-tip="켜두면 경기 중 위쪽에 현재 포지션 평가 기반 승률 게이지가 표시됩니다. 기물을 움직일 때마다 자동으로 다시 계산됩니다.">현재 승률 표시</span>
+          <span class="rule-label" data-tip="켜두면 경기 중 위쪽에 현재 포지션 평가 기반 승률 게이지가 표시됩니다.">현재 승률 표시</span>
           <button class="toggle on" data-rule="winrate">가능</button>
         </div>
       </div>
@@ -1110,10 +1282,65 @@
   </div>
 </div>
 
+<div id="recordsModal" class="modal-back hidden">
+  <div class="modal">
+    <h2>📜 경기 기록</h2>
+    <div id="recordList" class="record-list"></div>
+    <div class="modal-actions">
+      <button id="closeRecordsBtn" class="sub-btn primary">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="replayModal" class="modal-back hidden">
+  <div class="modal">
+    <h2>🎬 경기 리플레이</h2>
+
+    <div class="replay-layout">
+      <div class="replay-board-wrap">
+        <div id="replayBoard" class="replay-board"></div>
+      </div>
+
+      <div class="replay-info">
+        <h3 id="replayTitle">리플레이</h3>
+        <div id="replayMeta" class="info-box"></div>
+        <div id="replayStepText" class="replay-step">0 / 0</div>
+        <div id="replayMoveText" class="replay-move-text">초기 배치</div>
+
+        <div class="modal-actions" style="justify-content:flex-start;">
+          <button id="replayPrevBtn" class="sub-btn">되돌아가기</button>
+          <button id="replayNextBtn" class="sub-btn primary">앞으로 돌리기</button>
+        </div>
+
+        <div class="modal-actions" style="justify-content:flex-start;">
+          <button id="backToRecordsBtn" class="sub-btn">기록 목록으로</button>
+          <button id="closeReplayBtn" class="sub-btn primary">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="promotionModal" class="modal-back hidden">
+  <div class="modal" style="width:min(540px,100%);">
+    <h2>프로모션 선택</h2>
+    <div class="info-box">
+      폰이 끝까지 도착했습니다. 바꿀 기물을 선택하세요.<br>
+      선택한 기물로 실제로 바뀐 뒤 체크메이트/스테일메이트가 판정됩니다.
+    </div>
+    <div class="promotion-grid">
+      <button class="choice promo-choice" data-promo="q">♕ 퀸</button>
+      <button class="choice promo-choice" data-promo="r">♖ 룩</button>
+      <button class="choice promo-choice" data-promo="b">♗ 비숍</button>
+      <button class="choice promo-choice" data-promo="n">♘ 나이트</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const LS_KEY = "chess_master_users_v4";
+  const LS_KEY = "chess_master_users_v10";
 
   const PIECE_ICON = {
     w:{ p:"♙", r:"♖", n:"♘", b:"♗", q:"♕", k:"♔" },
@@ -1213,6 +1440,8 @@
   let legalForSelected = [];
   let gameEnded = false;
   let dragFrom = null;
+  let replayState = null;
+  let pendingPromotionMove = null;
 
   let settings = {
     rules:{
@@ -1228,8 +1457,18 @@
   };
 
   function loadUsers(){
-    try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
-    catch{ return {}; }
+    try{
+      return JSON.parse(localStorage.getItem(LS_KEY)) || {};
+    }catch{
+      return {};
+    }
+  }
+
+  function normalizeUser(nick){
+    if(!users[nick]) users[nick] = { score:0, games:0, records:[] };
+    if(typeof users[nick].score !== "number") users[nick].score = 0;
+    if(typeof users[nick].games !== "number") users[nick].games = 0;
+    if(!Array.isArray(users[nick].records)) users[nick].records = [];
   }
 
   function saveUsers(){
@@ -1256,6 +1495,7 @@
   }
 
   function updateMainUI(){
+    normalizeUser(currentNick);
     const user = users[currentNick];
     const score = user.score || 0;
     const rank = rankOf(score);
@@ -1287,6 +1527,8 @@
 
   function updateRankModal(){
     if(!currentNick || !users[currentNick]) return;
+    normalizeUser(currentNick);
+
     const score = users[currentNick].score || 0;
     const curRank = rankOf(score);
     const next = nextRank(score);
@@ -1364,6 +1606,10 @@
     $("mainScreen").classList.remove("hidden");
     $("settingsModal").classList.add("hidden");
     $("resultModal").classList.add("hidden");
+    $("recordsModal").classList.add("hidden");
+    $("replayModal").classList.add("hidden");
+    $("promotionModal").classList.add("hidden");
+    pendingPromotionMove = null;
     hideRankModal();
     stopTimer();
     updateMainUI();
@@ -1376,6 +1622,10 @@
     $("gameScreen").classList.add("hidden");
     $("settingsModal").classList.add("hidden");
     $("resultModal").classList.add("hidden");
+    $("recordsModal").classList.add("hidden");
+    $("replayModal").classList.add("hidden");
+    $("promotionModal").classList.add("hidden");
+    pendingPromotionMove = null;
     hideRankModal();
     stopTimer();
   }
@@ -1390,7 +1640,7 @@
         $("newNickHelp").className = "help-text bad";
         return;
       }
-      users[nick] = { score:0, games:0 };
+      users[nick] = { score:0, games:0, records:[] };
       saveUsers();
     }else{
       if(!users[nick]){
@@ -1398,6 +1648,8 @@
         $("oldNickHelp").className = "help-text bad";
         return;
       }
+      normalizeUser(nick);
+      saveUsers();
     }
 
     currentNick = nick;
@@ -1443,6 +1695,40 @@
   $("rankChip").addEventListener("click", showRankModal);
   $("gameScoreChip").addEventListener("click", showRankModal);
   $("closeRankModalBtn").addEventListener("click", hideRankModal);
+
+  $("historyBtn").addEventListener("click", showRecordsModal);
+  $("closeRecordsBtn").addEventListener("click", () => $("recordsModal").classList.add("hidden"));
+  $("closeReplayBtn").addEventListener("click", () => $("replayModal").classList.add("hidden"));
+  $("backToRecordsBtn").addEventListener("click", () => {
+    $("replayModal").classList.add("hidden");
+    showRecordsModal();
+  });
+  $("replayPrevBtn").addEventListener("click", () => stepReplay(-1));
+  $("replayNextBtn").addEventListener("click", () => stepReplay(1));
+
+  document.querySelectorAll(".promo-choice").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if(!pendingPromotionMove || !match || gameEnded) return;
+
+      const choice = btn.dataset.promo;
+      const base = pendingPromotionMove;
+
+      const exact = legalMovesFor(match.turn, match.board, match).find(m =>
+        m.fr === base.fr &&
+        m.fc === base.fc &&
+        m.tr === base.tr &&
+        m.tc === base.tc &&
+        m.promo === choice
+      );
+
+      const finalMove = exact || { ...base, promo:choice };
+
+      pendingPromotionMove = null;
+      $("promotionModal").classList.add("hidden");
+
+      doMove(finalMove);
+    });
+  });
 
   $("backMainBtn").addEventListener("click", () => {
     if(!match || gameEnded){
@@ -1501,6 +1787,184 @@
     startGame();
   });
 
+  function showRecordsModal(){
+    if(!currentNick || !users[currentNick]) return;
+    normalizeUser(currentNick);
+
+    const records = users[currentNick].records || [];
+    const list = $("recordList");
+    list.innerHTML = "";
+
+    if(records.length === 0){
+      list.innerHTML = `<div class="info-box">아직 저장된 경기 기록이 없습니다. 매치가 끝나면 여기에 기록이 남습니다.</div>`;
+    }else{
+      records.forEach((rec, idx) => {
+        const counts = countRecordAnnotations(rec);
+        const card = document.createElement("div");
+        card.className = "record-card";
+        card.innerHTML = `
+          <div class="record-card-top">
+            <span>${rec.resultText}</span>
+            <span>${rec.finalGain >= 0 ? "+" : ""}${rec.finalGain}점</span>
+          </div>
+          <div class="record-meta">
+            날짜: ${rec.date}<br>
+            색상: ${rec.playerColor === "w" ? "백" : "흑"} · 난이도: ${rec.diffName} · 수: ${rec.moves.length}수<br>
+            내 수 분석: 탁월한 수 ${counts.brilliant}개 · 실수 ${counts.mistake}개 · 희생 ${counts.sacrifice}개 · 체크 ${counts.check}개 · 체크메이트 ${counts.mate}개 · 체크메이트 가능 ${counts.missedMate}개<br>
+            클릭하면 이 판의 전체 기물 움직임을 리플레이로 볼 수 있습니다.
+          </div>
+          <div class="tag-line">
+            <span class="tag-chip">!! ${counts.brilliant}</span>
+            <span class="tag-chip">? ${counts.mistake}</span>
+            <span class="tag-chip">♞ ${counts.sacrifice}</span>
+            <span class="tag-chip">+ ${counts.check}</span>
+            <span class="tag-chip"># ${counts.mate}</span>
+            <span class="tag-chip">M! ${counts.missedMate}</span>
+          </div>
+        `;
+        card.addEventListener("click", () => openReplay(idx));
+        list.appendChild(card);
+      });
+    }
+
+    $("recordsModal").classList.remove("hidden");
+  }
+
+  function countRecordAnnotations(rec){
+    const counts = {
+      brilliant:0,
+      mistake:0,
+      sacrifice:0,
+      check:0,
+      mate:0,
+      missedMate:0
+    };
+
+    const annotations = rec.annotations || [];
+    for(const tags of annotations){
+      for(const tag of tags){
+        if(tag.code === "!!") counts.brilliant++;
+        if(tag.code === "?") counts.mistake++;
+        if(tag.code === "♞") counts.sacrifice++;
+        if(tag.code === "+") counts.check++;
+        if(tag.code === "#") counts.mate++;
+        if(tag.code === "M!") counts.missedMate++;
+      }
+    }
+
+    return counts;
+  }
+
+  function openReplay(recordIndex){
+    const record = users[currentNick].records[recordIndex];
+    if(!record) return;
+
+    replayState = { record, step:0 };
+    $("recordsModal").classList.add("hidden");
+    $("replayModal").classList.remove("hidden");
+    renderReplay();
+  }
+
+  function stepReplay(delta){
+    if(!replayState) return;
+    const max = replayState.record.snapshots.length - 1;
+    replayState.step = Math.max(0, Math.min(max, replayState.step + delta));
+    renderReplay();
+  }
+
+  function getHintTag(tags){
+    return (tags || []).find(t => (t.code === "M!" || t.code === "?") && t.hint);
+  }
+
+  function renderReplay(){
+    if(!replayState) return;
+
+    const rec = replayState.record;
+    const step = replayState.step;
+    const board = rec.snapshots[step];
+    const move = step === 0 ? null : rec.moves[step - 1];
+    const lastMv = step === 0 ? null : rec.moveObjects[step - 1];
+    const tags = step === 0 ? [] : (rec.annotations ? rec.annotations[step - 1] || [] : []);
+    const hintTag = getHintTag(tags);
+    const beforeBoard = step > 0 ? rec.snapshots[step - 1] : null;
+
+    $("replayTitle").textContent = rec.resultText;
+    $("replayMeta").innerHTML = `
+      날짜: <b>${rec.date}</b><br>
+      내 색상: <b>${rec.playerColor === "w" ? "백" : "흑"}</b><br>
+      난이도: <b>${rec.diffName}</b><br>
+      획득 점수: <b>${rec.finalGain >= 0 ? "+" : ""}${rec.finalGain}</b>
+    `;
+    $("replayStepText").textContent = `${step} / ${rec.snapshots.length - 1}`;
+
+    if(step === 0){
+      $("replayMoveText").innerHTML = "초기 배치";
+    }else{
+      $("replayMoveText").innerHTML = `
+        <b>${move}</b><br>
+        ${annotationDetail(tags)}
+      `;
+    }
+
+    $("replayPrevBtn").disabled = step <= 0;
+    $("replayNextBtn").disabled = step >= rec.snapshots.length - 1;
+
+    const el = $("replayBoard");
+    el.innerHTML = "";
+
+    const flip = rec.playerColor === "b";
+
+    for(let i = 0; i < 64; i++){
+      const vr = Math.floor(i / 8);
+      const vc = i % 8;
+      const r = flip ? 7 - vr : vr;
+      const c = flip ? 7 - vc : vc;
+
+      const sq = document.createElement("div");
+      sq.className = "sq " + ((r + c) % 2 === 0 ? "light" : "dark");
+
+      if(lastMv){
+        const isFrom = lastMv.fr === r && lastMv.fc === c;
+        const isTo = lastMv.tr === r && lastMv.tc === c;
+        if(isFrom || isTo) sq.classList.add("replay-current");
+      }
+
+      if(hintTag && hintTag.hint){
+        const h = hintTag.hint;
+        if((h.fr === r && h.fc === c) || (h.tr === r && h.tc === c)){
+          sq.classList.add("mate-hint");
+        }
+      }
+
+      const p = board[r][c];
+      if(p){
+        const pieceSpan = document.createElement("span");
+        pieceSpan.className = "piece " + (p.color === "w" ? "white" : "black");
+        pieceSpan.textContent = PIECE_ICON[p.color][p.t];
+        sq.appendChild(pieceSpan);
+      }
+
+      if(hintTag && hintTag.hint && hintTag.hint.tr === r && hintTag.hint.tc === c && beforeBoard){
+        const h = hintTag.hint;
+        const ghostBase = beforeBoard[h.fr][h.fc];
+        if(ghostBase){
+          const ghost = document.createElement("span");
+          const finalType = h.promo || ghostBase.t;
+          ghost.className = "piece ghost " + (ghostBase.color === "w" ? "white" : "black");
+          ghost.textContent = PIECE_ICON[ghostBase.color][finalType];
+          sq.appendChild(ghost);
+        }
+      }
+
+      const coord = document.createElement("span");
+      coord.className = "coord";
+      coord.textContent = algebra(r,c);
+      sq.appendChild(coord);
+
+      el.appendChild(sq);
+    }
+  }
+
   function newBoard(){
     const b = Array.from({ length:8 }, () => Array(8).fill(null));
     const back = ["r","n","b","q","k","b","n","r"];
@@ -1515,15 +1979,20 @@
     return b;
   }
 
+  function snapshotBoard(board){
+    return board.map(row => row.map(p => p ? { ...p } : null));
+  }
+
   function startGame(){
     const playerColor = settings.color === "random"
       ? (Math.random() < 0.5 ? "w" : "b")
       : settings.color;
 
     const timeMs = settings.time * 60 * 1000;
+    const board = newBoard();
 
     match = {
-      board:newBoard(),
+      board,
       turn:"w",
       playerColor,
       aiColor:playerColor === "w" ? "b" : "w",
@@ -1534,6 +2003,9 @@
       lastTick:performance.now(),
       enPassant:null,
       moveHistory:[],
+      moveObjects:[],
+      annotations:[],
+      snapshots:[snapshotBoard(board)],
       fullmove:1,
       lastAiMove:null
     };
@@ -1542,10 +2014,12 @@
     selected = null;
     legalForSelected = [];
     dragFrom = null;
+    pendingPromotionMove = null;
 
     $("mainScreen").classList.add("hidden");
     $("loginScreen").classList.add("hidden");
     $("gameScreen").classList.remove("hidden");
+    $("promotionModal").classList.add("hidden");
 
     $("gameScoreChip").innerHTML = `🏆 ${fmtScore(users[currentNick].score || 0)}`;
     $("gameSub").textContent = `당신은 ${playerColor === "w" ? "백" : "흑"}입니다. 백이 먼저 시작합니다.`;
@@ -1639,6 +2113,17 @@
       }
     }
     return null;
+  }
+
+  function onlyKingsRemain(board){
+    const pieces = [];
+    for(let r = 0; r < 8; r++){
+      for(let c = 0; c < 8; c++){
+        const p = board[r][c];
+        if(p) pieces.push(p);
+      }
+    }
+    return pieces.length === 2 && pieces.every(p => p.t === "k");
   }
 
   function isSquareAttacked(r,c,byColor,board){
@@ -1736,7 +2221,14 @@
 
       if(inBounds(r + dir,c) && !board[r + dir][c]){
         const isPromo = r + dir === promoRow && meta.rules.promotion;
-        pushMove(moves,board,r,c,r + dir,c,isPromo ? { promo:"q" } : {});
+        if(isPromo){
+          for(const pr of ["q","r","b","n"]){
+            pushMove(moves,board,r,c,r + dir,c,{ promo:pr });
+          }
+        }else{
+          pushMove(moves,board,r,c,r + dir,c,{});
+        }
+
         if(r === start && !board[r + dir * 2][c]){
           pushMove(moves,board,r,c,r + dir * 2,c,{ doublePawn:true });
         }
@@ -1750,7 +2242,13 @@
         const target = board[nr][nc];
         if(target && target.color !== p.color){
           const isPromo = nr === promoRow && meta.rules.promotion;
-          pushMove(moves,board,r,c,nr,nc,isPromo ? { promo:"q" } : {});
+          if(isPromo){
+            for(const pr of ["q","r","b","n"]){
+              pushMove(moves,board,r,c,nr,nc,{ promo:pr });
+            }
+          }else{
+            pushMove(moves,board,r,c,nr,nc,{});
+          }
         }
 
         if(meta.rules.enPassant && meta.enPassant && meta.enPassant.r === nr && meta.enPassant.c === nc){
@@ -1897,7 +2395,7 @@
     const checkText = match.rules.checkRule && isInCheck(match.turn,match.board) ? " · 체크!" : "";
     $("turnText").innerHTML = `현재 차례: ${colorText}${checkText}`;
 
-    const diffName = match.difficulty === "easy" ? "쉬움" : match.difficulty === "normal" ? "보통" : "어려움";
+    const diffName = getDiffName(match.difficulty);
 
     $("gameInfo").innerHTML = `
       내 색상: <b>${match.playerColor === "w" ? "백" : "흑"}</b><br>
@@ -1954,7 +2452,7 @@
         pieceSpan.className = "piece " + (p.color === "w" ? "white" : "black");
         pieceSpan.textContent = PIECE_ICON[p.color][p.t];
 
-        if(p.color === match.playerColor && match.turn === match.playerColor && !gameEnded){
+        if(p.color === match.playerColor && match.turn === match.playerColor && !gameEnded && !pendingPromotionMove){
           pieceSpan.setAttribute("draggable","true");
           pieceSpan.addEventListener("dragstart", (e) => {
             dragFrom = { r, c };
@@ -1983,7 +2481,6 @@
     if(!match) return;
 
     $("winrateBox").classList.toggle("hidden", !match.rules.winrate);
-
     if(!match.rules.winrate) return;
 
     const evalScore = evaluateBoard(match.board, match.playerColor, match);
@@ -2021,6 +2518,7 @@
   function onSquareClick(r,c){
     if(!match || gameEnded) return;
     if(match.turn !== match.playerColor) return;
+    if(pendingPromotionMove) return;
 
     const p = match.board[r][c];
 
@@ -2054,6 +2552,7 @@
     if(!match || gameEnded) return;
     if(match.turn !== match.playerColor) return;
     if(!dragFrom) return;
+    if(pendingPromotionMove) return;
 
     const moves = legalMovesFor(match.turn,match.board,match).filter(m => m.fr === dragFrom.r && m.fc === dragFrom.c);
     const mv = moves.find(m => m.tr === r && m.tc === c);
@@ -2073,10 +2572,13 @@
     const piece = match.board[mv.fr][mv.fc];
 
     if(piece && piece.t === "p" && match.rules.promotion && (mv.tr === 0 || mv.tr === 7)){
-      let choice = prompt("프로모션 기물을 입력하세요: q=퀸, r=룩, b=비숍, n=나이트", "q");
-      choice = (choice || "q").toLowerCase();
-      if(!["q","r","b","n"].includes(choice)) choice = "q";
-      mv.promo = choice;
+      pendingPromotionMove = { ...mv };
+      selected = null;
+      legalForSelected = [];
+      dragFrom = null;
+      $("promotionModal").classList.remove("hidden");
+      renderGame();
+      return;
     }
 
     doMove(mv);
@@ -2095,23 +2597,54 @@
     return `${pieceBefore.color === "w" ? "백" : "흑"} ${name}${from}${cap}${to}${promo}`;
   }
 
+  function cleanMoveObject(mv){
+    return {
+      fr:mv.fr,
+      fc:mv.fc,
+      tr:mv.tr,
+      tc:mv.tc,
+      castle:mv.castle || null,
+      enPassant:!!mv.enPassant,
+      promo:mv.promo || null
+    };
+  }
+
   function doMove(mv){
     const pieceBefore = match.board[mv.fr][mv.fc] ? { ...match.board[mv.fr][mv.fc] } : null;
     const capturedBefore = match.board[mv.tr][mv.tc] ? { ...match.board[mv.tr][mv.tc] } : null;
+    if(!pieceBefore) return;
+
+    const boardBefore = snapshotBoard(match.board);
+    const metaBefore = cloneMeta(match);
+    const moverColor = pieceBefore.color;
 
     makeMoveOn(match.board,mv,match);
 
-    if(pieceBefore && pieceBefore.color === match.aiColor){
+    const boardAfter = snapshotBoard(match.board);
+    const metaAfter = cloneMeta(match);
+
+    let tags = [];
+    if(moverColor === match.playerColor){
+      tags = analyzeMove(mv, boardBefore, boardAfter, moverColor, metaBefore, metaAfter);
+    }
+
+    if(pieceBefore.color === match.aiColor){
       match.lastAiMove = { fr:mv.fr, fc:mv.fc, tr:mv.tr, tc:mv.tc };
     }else{
       match.lastAiMove = null;
     }
 
-    match.moveHistory.push(moveNotation(mv,pieceBefore,capturedBefore));
+    match.moveHistory.push(moveNotation(mv,pieceBefore,capturedBefore) + annotationText(tags));
+    match.moveObjects.push(cleanMoveObject(mv));
+    match.annotations.push(tags);
+    match.snapshots.push(snapshotBoard(match.board));
 
     selected = null;
     legalForSelected = [];
     dragFrom = null;
+    pendingPromotionMove = null;
+    $("promotionModal").classList.add("hidden");
+
     match.turn = opp(match.turn);
 
     if(match.turn === "w") match.fullmove++;
@@ -2138,6 +2671,11 @@
       return true;
     }
 
+    if(onlyKingsRemain(match.board)){
+      finishGame("stalemate", null);
+      return true;
+    }
+
     const moves = legalMovesFor(match.turn,match.board,match);
 
     if(moves.length === 0){
@@ -2154,7 +2692,7 @@
   }
 
   function aiMove(){
-    if(!match || gameEnded || match.turn !== match.aiColor) return;
+    if(!match || gameEnded || match.turn !== match.aiColor || pendingPromotionMove) return;
 
     const moves = legalMovesFor(match.aiColor,match.board,match);
     if(moves.length === 0){
@@ -2247,13 +2785,14 @@
   function minimax(board,meta,depth,turn,alpha,beta,maximizing,aiColor){
     const myMoves = legalMovesFor(turn,board,meta);
 
-    if(depth === 0 || myMoves.length === 0 || !kingPos("w",board) || !kingPos("b",board)){
+    if(depth === 0 || myMoves.length === 0 || !kingPos("w",board) || !kingPos("b",board) || onlyKingsRemain(board)){
       if(myMoves.length === 0 && meta.rules.checkRule && isInCheck(turn,board)){
         return turn === aiColor ? -999999 - depth : 999999 + depth;
       }
 
       if(!kingPos(aiColor,board)) return -999999;
       if(!kingPos(opp(aiColor),board)) return 999999;
+      if(onlyKingsRemain(board)) return 0;
 
       return evaluateBoard(board,aiColor,meta);
     }
@@ -2312,6 +2851,8 @@
   }
 
   function evaluateBoard(board,aiColor,meta){
+    if(onlyKingsRemain(board)) return 0;
+
     let score = 0;
 
     for(let r = 0; r < 8; r++){
@@ -2340,10 +2881,231 @@
     return score;
   }
 
+  function isCheckmateAfterMove(board, meta, colorToMove){
+    if(onlyKingsRemain(board)) return false;
+    const moves = legalMovesFor(colorToMove, board, meta);
+    return moves.length === 0 && meta.rules.checkRule && isInCheck(colorToMove, board);
+  }
+
+  function sameMoveBasic(a,b){
+    if(!a || !b) return false;
+    return a.fr === b.fr && a.fc === b.fc && a.tr === b.tr && a.tc === b.tc && (a.promo || null) === (b.promo || null);
+  }
+
+  function findMateMove(color, board, meta){
+    const moves = legalMovesFor(color, board, meta);
+
+    for(const mv of moves){
+      const nb = cloneBoard(board);
+      const nm = cloneMeta(meta);
+      makeMoveOn(nb, mv, nm);
+
+      if(isCheckmateAfterMove(nb, nm, opp(color))){
+        return mv;
+      }
+    }
+
+    return null;
+  }
+
+  function findCaptureOfSquare(color, targetR, targetC, board, meta){
+    const moves = legalMovesFor(color, board, meta);
+    return moves.find(m => m.tr === targetR && m.tc === targetC) || null;
+  }
+
+  function bestImmediateGainAfter(color, board, meta){
+    const moves = legalMovesFor(color, board, meta);
+    let best = 0;
+
+    for(const mv of moves){
+      const target = board[mv.tr][mv.tc];
+      const mover = board[mv.fr][mv.fc];
+      let gain = 0;
+
+      if(target) gain += ENGINE_VALUE[target.t] || 0;
+      if(mv.promo) gain += (ENGINE_VALUE[mv.promo] || 0) - (ENGINE_VALUE.p || 0);
+
+      const nb = cloneBoard(board);
+      const nm = cloneMeta(meta);
+      makeMoveOn(nb, mv, nm);
+
+      if(isCheckmateAfterMove(nb, nm, opp(color))) gain += 5000;
+
+      if(mover && gain > best) best = gain;
+    }
+
+    return best;
+  }
+
+  function isGoodSacrificeMove(mv, boardBefore, boardAfter, moverColor, metaBefore, metaAfter, bestEval, afterEval){
+    const movedBefore = boardBefore[mv.fr][mv.fc];
+    const movedAfter = boardAfter[mv.tr][mv.tc];
+    if(!movedBefore || !movedAfter) return false;
+    if(!["q","r","b","n"].includes(movedAfter.t)) return false;
+
+    const movedValue = ENGINE_VALUE[movedAfter.t] || 0;
+    const capturedNow = boardBefore[mv.tr][mv.tc];
+    const capturedNowValue = capturedNow ? ENGINE_VALUE[capturedNow.t] || 0 : 0;
+    const netRisk = movedValue - capturedNowValue;
+
+    if(netRisk <= 120) return false;
+
+    const opponentCapture = findCaptureOfSquare(opp(moverColor), mv.tr, mv.tc, boardAfter, metaAfter);
+    if(!opponentCapture) return false;
+
+    const afterOpponentBoard = cloneBoard(boardAfter);
+    const afterOpponentMeta = cloneMeta(metaAfter);
+    makeMoveOn(afterOpponentBoard, opponentCapture, afterOpponentMeta);
+
+    const playerMateReply = findMateMove(moverColor, afterOpponentBoard, afterOpponentMeta);
+    const immediateGain = bestImmediateGainAfter(moverColor, afterOpponentBoard, afterOpponentMeta);
+    const beforeEval = evaluateBoard(boardBefore, moverColor, metaBefore);
+    const afterOpponentEval = evaluateBoard(afterOpponentBoard, moverColor, afterOpponentMeta);
+
+    const nearBest = bestEval - afterEval <= 120;
+    const notLosingBadly = afterEval >= beforeEval - 180;
+
+    if(playerMateReply) return true;
+    if(immediateGain >= netRisk + 180 && nearBest) return true;
+    if(notLosingBadly && nearBest && immediateGain >= netRisk) return true;
+    if(afterOpponentEval >= beforeEval - 120 && nearBest) return true;
+
+    return false;
+  }
+
+  function analyzeMove(mv, boardBefore, boardAfter, moverColor, metaBefore, metaAfter){
+    const tags = [];
+    const opponent = opp(moverColor);
+
+    const mateMoveBefore = findMateMove(moverColor, boardBefore, metaBefore);
+    const didMate = isCheckmateAfterMove(boardAfter, metaAfter, opponent);
+
+    const beforeEval = evaluateBoard(boardBefore, moverColor, metaBefore);
+    const afterEval = evaluateBoard(boardAfter, moverColor, metaAfter);
+
+    let bestEval = -Infinity;
+    let bestMove = null;
+    const legal = legalMovesFor(moverColor, boardBefore, metaBefore);
+
+    for(const candidate of legal){
+      const nb = cloneBoard(boardBefore);
+      const nm = cloneMeta(metaBefore);
+      makeMoveOn(nb, candidate, nm);
+      const ev = evaluateBoard(nb, moverColor, nm);
+
+      if(ev > bestEval){
+        bestEval = ev;
+        bestMove = candidate;
+      }
+    }
+
+    const loss = bestEval - afterEval;
+
+    if(didMate){
+      tags.push({ code:"#", name:"체크메이트", desc:"이 수로 체크메이트가 되었습니다." });
+    }else if(mateMoveBefore && !sameMoveBasic(mv, mateMoveBefore)){
+      tags.push({
+        code:"M!",
+        name:"체크메이트 가능했음",
+        desc:"이 차례에 바로 체크메이트를 할 수 있었지만 다른 수를 두었습니다. 빨간 칸과 연한 기물이 정답 수입니다.",
+        hint: cleanMoveObject(mateMoveBefore)
+      });
+    }
+
+    if(metaAfter.rules.checkRule && isInCheck(opponent, boardAfter) && !didMate){
+      tags.push({ code:"+", name:"체크", desc:"상대 킹을 체크했습니다." });
+    }
+
+    const goodSacrifice = isGoodSacrificeMove(mv, boardBefore, boardAfter, moverColor, metaBefore, metaAfter, bestEval, afterEval);
+
+    if(goodSacrifice){
+      tags.push({ code:"♞", name:"희생", desc:"기물을 내줄 위험이 있지만, 그 뒤 더 큰 이득이나 강한 공격 보상이 있는 희생입니다." });
+    }
+
+    if(goodSacrifice && loss <= 120){
+      tags.unshift({
+        code:"!!",
+        name:"탁월한 수",
+        desc:"최선에 가까운 좋은 희생입니다. 그냥 기물을 버리는 수가 아니라 보상이 있는 희생입니다."
+      });
+    }
+
+    if(!didMate && bestMove && !sameMoveBasic(mv, bestMove) && loss >= 120){
+      let levelText = "최선수보다 평가가 떨어졌습니다.";
+      if(loss >= 260) levelText = "상당히 큰 손해가 나는 수입니다.";
+      if(loss >= 450) levelText = "매우 큰 실수입니다.";
+
+      tags.push({
+        code:"?",
+        name:"실수",
+        desc:`${levelText} 빨간 칸과 연한 기물이 더 좋은 수입니다.`,
+        hint: cleanMoveObject(bestMove)
+      });
+    }
+
+    return tags;
+  }
+
+  function annotationText(tags){
+    if(!tags || tags.length === 0) return "";
+    return " " + tags.map(t => t.code).join(" ");
+  }
+
+  function annotationDetail(tags){
+    if(!tags || tags.length === 0) return "특별한 분석 표시 없음";
+
+    return tags.map(t => {
+      let extra = "";
+
+      if((t.code === "M!" || t.code === "?") && t.hint){
+        const label = t.code === "M!" ? "체크메이트 정답" : "더 좋은 수";
+        extra = `
+          <div class="mate-answer">
+            ${label}: ${algebra(t.hint.fr,t.hint.fc)} → ${algebra(t.hint.tr,t.hint.tc)}
+            ${t.hint.promo ? " = " + PIECE_NAME[t.hint.promo] : ""}
+          </div>
+        `;
+      }
+
+      return `<span class="tag-chip">${t.code} ${t.name}</span><br>${t.desc}${extra}`;
+    }).join("<br><br>");
+  }
+
+  function getDiffName(diff){
+    if(diff === "easy") return "쉬움";
+    if(diff === "normal") return "보통";
+    return "어려움";
+  }
+
+  function saveMatchRecord(resultText, finalGain, diffName){
+    normalizeUser(currentNick);
+
+    const record = {
+      id: Date.now(),
+      date: new Date().toLocaleString("ko-KR"),
+      resultText,
+      finalGain,
+      diffName,
+      playerColor: match.playerColor,
+      aiColor: match.aiColor,
+      moves: match.moveHistory.slice(),
+      moveObjects: match.moveObjects.slice(),
+      annotations: match.annotations.map(tags => tags.map(t => ({ ...t, hint:t.hint ? { ...t.hint } : null }))),
+      snapshots: match.snapshots.map(snapshotBoard)
+    };
+
+    users[currentNick].records.unshift(record);
+    users[currentNick].records = users[currentNick].records.slice(0, 30);
+  }
+
   function finishGame(reason,winner){
     if(gameEnded) return;
     gameEnded = true;
     stopTimer();
+    $("promotionModal").classList.add("hidden");
+    pendingPromotionMove = null;
+
+    normalizeUser(currentNick);
 
     const player = match.playerColor;
     const ai = match.aiColor;
@@ -2354,7 +3116,7 @@
       : Math.max(0,Math.ceil(-match.blackMs / 1000));
 
     const diffMul = match.difficulty === "easy" ? 2 : match.difficulty === "normal" ? 3 : 5;
-    const diffName = match.difficulty === "easy" ? "쉬움" : match.difficulty === "normal" ? "보통" : "어려움";
+    const diffName = getDiffName(match.difficulty);
 
     let baseBeforeMultiplier = pieceScore;
     let resultText = "";
@@ -2400,7 +3162,11 @@
 
     users[currentNick].score = Math.max(0,(users[currentNick].score || 0) + finalGain);
     users[currentNick].games = (users[currentNick].games || 0) + 1;
+
+    saveMatchRecord(resultText, finalGain, diffName);
     saveUsers();
+
+    const counts = countRecordAnnotations(users[currentNick].records[0]);
 
     $("resultTitle").textContent = resultText;
     $("resultBody").innerHTML = `
@@ -2410,7 +3176,9 @@
       <div class="result-row"><span>배율 적용 전 합계</span><b>${afterTime >= 0 ? "+" : ""}${afterTime}</b></div>
       <div class="result-row"><span>난이도 배율</span><b>${diffName} ×${diffMul}</b></div>
       <div class="result-row"><span>이번 매치 최종 점수</span><b>${finalGain >= 0 ? "+" : ""}${finalGain}</b></div>
+      <div class="result-row"><span>내 수 분석</span><b>!! ${counts.brilliant} · ? ${counts.mistake} · ♞ ${counts.sacrifice} · + ${counts.check} · # ${counts.mate} · M! ${counts.missedMate}</b></div>
       <div class="result-row"><span>현재 총점</span><b>${fmtScore(users[currentNick].score)}</b></div>
+      <div class="result-row"><span>기록 저장</span><b>완료</b></div>
     `;
 
     $("resultModal").classList.remove("hidden");
